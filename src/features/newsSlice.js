@@ -4,28 +4,40 @@ import axios from 'axios';
 const API_KEY = '75b665e934264809a7b44d8f1ae3da2f';
 const TOP_HEADLINES_URL = `https://newsapi.org/v2/top-headlines?country=us&apiKey=${API_KEY}`;
 const EVERYTHING_URL = `https://newsapi.org/v2/everything?apiKey=${API_KEY}`;
+const PAGE_SIZE = 6; // Define a constant for page size
 
-export const fetchTopHeadlines = createAsyncThunk('news/fetchTopHeadlines', async ({ page }) => {
-  const response = await axios.get(`${TOP_HEADLINES_URL}&page=${page}&pageSize=6`);
-  return response.data.articles;
-});
+export const fetchTopHeadlines = createAsyncThunk(
+  'news/fetchTopHeadlines',
+  async ({ page }) => {
+    const response = await axios.get(`${TOP_HEADLINES_URL}&page=${page}&pageSize=${PAGE_SIZE}`);
+    return response.data.articles;
+  }
+);
 
-export const fetchArticlesByCategory = createAsyncThunk('news/fetchArticlesByCategory', async ({ category, page }) => {
-  const response = await axios.get(`${TOP_HEADLINES_URL}&category=${category}&page=${page}&pageSize=6`);
-  return response.data.articles;
-});
+export const fetchArticlesByCategory = createAsyncThunk(
+  'news/fetchArticlesByCategory',
+  async ({ category, page }) => {
+    const response = await axios.get(`${TOP_HEADLINES_URL}&category=${category}&page=${page}&pageSize=${PAGE_SIZE}`);
+    return response.data.articles;
+  }
+);
 
-export const fetchArticlesByKeyword = createAsyncThunk('news/fetchArticlesByKeyword', async ({ keyword, page }) => {
-  const response = await axios.get(`${EVERYTHING_URL}&q=${keyword}&page=${page}&pageSize=100`);
-  const filteredArticles = response.data.articles.filter(article => article.title.toLowerCase().includes(keyword.toLowerCase()));
-  const paginatedArticles = filteredArticles.slice((page - 1) * 6, page * 6);
-  return paginatedArticles;
-});
+export const fetchArticlesByKeyword = createAsyncThunk(
+  'news/fetchArticlesByKeyword',
+  async ({ keyword, page }) => {
+    const response = await axios.get(`${EVERYTHING_URL}&q=${keyword}&page=${page}&pageSize=100`);
+    const filteredArticles = response.data.articles.filter(article => 
+      article.title.toLowerCase().includes(keyword.toLowerCase())
+    );
+    const paginatedArticles = filteredArticles.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    return paginatedArticles;
+  }
+);
 
 export const fetchArticleDetail = createAsyncThunk(
   'news/fetchArticleDetail',
   async (articleId) => {
-    const response = await axios.get(`${TOP_HEADLINES_UR}`);
+    const response = await axios.get(`${TOP_HEADLINES_URL}&id=${articleId}`);
     return response.data;
   }
 );
