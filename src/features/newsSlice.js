@@ -16,16 +16,25 @@ export const fetchArticlesByCategory = createAsyncThunk('news/fetchArticlesByCat
 });
 
 export const fetchArticlesByKeyword = createAsyncThunk('news/fetchArticlesByKeyword', async ({ keyword, page }) => {
-  const response = await axios.get(`${EVERYTHING_URL}&q=${keyword}&page=${page}&pageSize=100`); // Fetch more articles to filter later
+  const response = await axios.get(`${EVERYTHING_URL}&q=${keyword}&page=${page}&pageSize=100`);
   const filteredArticles = response.data.articles.filter(article => article.title.toLowerCase().includes(keyword.toLowerCase()));
-  const paginatedArticles = filteredArticles.slice((page - 1) * 6, page * 6); // Pagination logic
+  const paginatedArticles = filteredArticles.slice((page - 1) * 6, page * 6);
   return paginatedArticles;
 });
+
+export const fetchArticleDetail = createAsyncThunk(
+  'news/fetchArticleDetail',
+  async (articleId) => {
+    const response = await axios.get(`${TOP_HEADLINES_UR}`);
+    return response.data;
+  }
+);
 
 const newsSlice = createSlice({
   name: 'news',
   initialState: {
     articles: [],
+    article: null,
     status: 'idle',
     error: null,
     category: '',
@@ -35,11 +44,11 @@ const newsSlice = createSlice({
   reducers: {
     setCategory(state, action) {
       state.category = action.payload;
-      state.keyword = ''; // Reset keyword when category is set
+      state.keyword = '';
     },
     setKeyword(state, action) {
       state.keyword = action.payload;
-      state.category = ''; // Reset category when keyword is set
+      state.category = '';
     },
     setPage(state, action) {
       state.page = action.payload;
@@ -77,6 +86,17 @@ const newsSlice = createSlice({
         state.articles = action.payload;
       })
       .addCase(fetchArticlesByKeyword.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message;
+      })
+      .addCase(fetchArticleDetail.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchArticleDetail.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.article = action.payload;
+      })
+      .addCase(fetchArticleDetail.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message;
       });
